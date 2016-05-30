@@ -1,0 +1,1 @@
+( (S (VP (TO to) (VP (VB restrict) (NP (DT the) (NNP RTC)) (PP (TO to) (NP (NNP Treasury) (NN borrowing))) (ADVP (RB only)) (, ,) (SBAR (IN unless) (S (NP (DT the) (NN agency)) (VP (VBP receive) (NP (JJ specific) (JJ congressional) (NN authorization)))))))) )

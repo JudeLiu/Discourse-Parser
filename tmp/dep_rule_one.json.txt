@@ -1,0 +1,1 @@
+bill<-det||prevent<-aux dobj advcl nsubj||Corp.<-det compound||raise<-advcl dobj mark||capital<-amod||have<-dobj mark||bank<-cc conj acl:relcl det amod||debt<-compound||count<-aux cop nmod neg nsubj||budget<-case det amod||restrict<-advcl dobj advmod mark||RTC<-det nmod||borrowing<-case compound||agency<-det||receive<-nsubj dobj mark
