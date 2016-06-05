@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- 
 import config
-import json, codecs, pickle, yaml, os, time
+import json, codecs, pickle, os, time
 from PorterStemmer import PorterStemmer
 from nltk.tree import Tree
 from byteify import json_loads_byteified, json_load_byteified, byteify

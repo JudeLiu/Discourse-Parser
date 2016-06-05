@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- 
 import util, config
-from syntax_tree import Syntax_tree
+#from syntax_tree import Syntax_tree
 import pickle, string, codecs, time
 
 def all_features(relation, parse_dict):
