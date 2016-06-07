@@ -85,7 +85,7 @@ def map_sense_to_number(sense):
 def map_number_to_sense(num):
 	sense = ['None', 'Expansion.List', 'Expansion.Conjunction', 'Expansion.Instantiation', 'Contingency.Cause', \
 	'Temporal.Asynchronous', 'Comparison.Contrast', 'Expansion.Restatement', 'Temporal.Synchrony', \
-	'Contingency.Pragmatic cause', 'Comparison.Concession''Expansion.Alternative' ]
+	'Contingency.Pragmatic cause', 'Comparison.Concession', 'Expansion.Alternative' ]
 
 	if num >= len(sense):
 		return 'Error'
@@ -174,6 +174,13 @@ def read_data_utf8(file_name):
 
 	return data# + rest_data
 
+def read_all_data_utf8(file_name):
+	data = []
+	with codecs.open(file_name, 'r', encoding = 'utf-8', errors = 'ignore') as f:
+		data = [json.loads(line) for line in f]
+
+	return data
+			
 
 def read_all_implicit_data_utf8(file_name):
 	data = []
