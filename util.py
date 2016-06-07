@@ -342,7 +342,7 @@ def load_production_rule_dict(file_name, length = -1):
 
 
 def write_parse_tree_to_file(file_name):
-	all_relations = read_data_utf8(file_name)
+	all_relations = read_all_data_utf8(file_name)
 	dict = {}
 	arg1_sent = []
 	arg2_sent = []
@@ -721,9 +721,20 @@ def valid_sense(sense):
 		return False
 
 
+def analyse_entrel():
+	from collections import defaultdict
+	stat_senses = defaultdict(int)
+	with codecs.open('train_pdtb.json', encoding = 'utf8', errors = 'ignore') as file:
+		for line in file:
+			relation = json.loads(line)
+			if relation['Type'] == 'EntRel':
+				stat_senses[relation['Sense'][0]] += 1
+	print(stat_senses)
+
+
+
 if __name__ == '__main__':
-	analyze_data()
-	deal_with_rest_data()
+	analyse_entrel()
 	"""
 	relations = read_data('train_pdtb.json')
 	sent_len = []

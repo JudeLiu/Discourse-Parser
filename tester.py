@@ -5,7 +5,7 @@ import nltk, codecs, json, pickle, time, sys, getopt
 class Tester:
 	def __init__(self, fname, **kargs):
 		self.file_name = fname
-		self.all_relations = util.read_data_utf8(self.file_name)
+		self.all_relations = util.read_all_data_utf8(self.file_name)
 
 
 	def test_word_pair_train(self):
@@ -128,6 +128,10 @@ class Tester:
 
 		start = time.time()
 		for index, relation in enumerate(self.all_relations):
+			if relation['Type'] == 'EntRel':
+				pred_label.append('EntRel')
+				continue
+
 			feat = {}
 			# Phase 2.1 Extract word pair feature
 			feat.update(feature_functions.word_pairs(relation, self.dict_word_pairs))
@@ -144,6 +148,7 @@ class Tester:
 			feat.update( feature_functions.dependency_rules(dependency_rule_by_relation[index], dict_dependency_rule) )
 			pred_label.append( model.classify(feat) )
 
+			'''
 			if len(relation['Sense']) == 1:
 				#if num_sense >= 1 and num_sense <= 7:
 				if util.valid_sense(relation['Sense'][0]):
@@ -163,6 +168,7 @@ class Tester:
 				multi_sense_no += 1
 				if util.predict_correct(model, one_feature) > 0:
 					correct_no += 1
+				'''
 		pass
 		end = time.time()
 		print('Extract features cost %1.10fs' % (end-start))
@@ -185,7 +191,8 @@ class Tester:
 			write_data = [json.dumps(wd) for wd in write_data]
 			file.write('\n'.join((write_data)))
 
-		print( 'Accuracy is: %1.10f' % (correct_no*1.0 / (multi_sense_no + len(features)) ) )
+		#print( 'Accuracy is: %1.10f' % (correct_no*1.0 / (multi_sense_no + len(features)) ) )
+		#print( 'Accuracy is: %1.10f' % nltk.classify.util.accuracy() )
 		#util.individual_predict(model, features)
 
 

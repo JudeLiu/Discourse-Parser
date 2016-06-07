@@ -148,7 +148,7 @@ def write_dependency_rule_by_line(file_name):
     models_jar = config.STANFORD_PARSER_MODEL_PATH
     dependency_parser = StanfordDependencyParser(path_to_jar = jar, path_to_models_jar = models_jar, java_options='-mx3000m')
 
-    all_relations = util.read_data_utf8(file_name)
+    all_relations = util.read_all_data_utf8(file_name)
 
     sentences = []
     lineno = 0
