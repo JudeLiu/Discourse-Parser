@@ -23,9 +23,7 @@ class Tester:
 			if num_sense != -1:
 				features.append( (feat, num_sense) )
 		
-		#print features
 		print( 'Accuracy is: %1.10f' % nltk.classify.util.accuracy(model, features))
-
 
 	def test_production_rule_train(self, write_parse_tree = False):
 		model = pickle.load(open('model/production_rule.model', 'rb'))
@@ -196,7 +194,7 @@ class Tester:
 		#util.individual_predict(model, features)
 
 
-if __name__ == '__main__':
+def test_together():
 	helpMsg = \
 '''Usage: tester.py [-p] [-d] test_file_name
 
@@ -228,3 +226,7 @@ Optional parameters:
 
 	test_file_name = arg[0]
 	Tester(test_file_name).test_together_train(write_parse_tree = write_prule, write_dependency_rule = write_drule)
+
+if __name__ == '__main__':
+	Tester('dev_pdtb.json').test_word_pair_train()
+	

@@ -230,6 +230,35 @@ def load_dict_word_pairs(file_name, length=-1):
 	return dict_word_pairs
 
 
+
+"""
+	called by write_word_pairs_to_file()
+	ignore any word pair with symbols
+"""
+def get_word_pair_from_file_with_count(fname):
+	all_relations = read_data(fname)
+	punctuation = ['.', ',', '!', '"', '#', '&', '\'', '*', '+', '-', '...', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\',\
+		']', '^', '_', '`', '|', '~', '$', '%', '--', '``', '\'\'']
+	dict = {}
+	for relation in all_relations:
+		for a1 in relation['Arg1']['Lemma']:
+			for a2 in relation['Arg2']['Lemma']:
+				if a1 in punctuation or a2 in punctuation or a1[0] in '0123456789' or a2[0] in '0123456789':
+					pass
+				else:
+					#pair = '%s|%s' % (stem_string(a1), stem_string(a2))
+					pair = '%s|%s' % (a1, a2)
+					if pair in dict:
+						dict[pair] += 1
+					else:
+						dict[pair] = 1
+
+	return dict
+
+
+'''
+	extract word pair
+'''
 def write_word_pairs_to_file():
 	file_name = config.TRAINSET_PATH
 	dict_word_pairs = get_word_pair_from_file_with_count(file_name)
@@ -247,6 +276,52 @@ def store_model(model, fname):
 	pickle.dump(model, open(fname, 'wb'), -1)#with highest protocol
 
 
+'''
+	preprocessor of extracting production rules from pdtb training set
+
+	for each line in training set, join the Lemma field of arg1 and arg2,
+	then put them to Berkeley parser,
+	finally we get the parse tree of arg1 and arg2 of the training set repectively
+'''
+def write_parse_tree_to_file(file_name):
+	all_relations = read_all_data_utf8(file_name)
+	dict = {}
+	arg1_sent = []
+	arg2_sent = []
+	arg1_sent_file_path = 'tmp/arg1_sentence.txt'
+	arg2_sent_file_path = 'tmp/arg2_sentence.txt'
+	#arg1_prule_file = 'tmp/arg1_production_rule.txt'
+	#arg2_prule_file = 'tmp/arg2_production_rule.txt'
+	#both_prule_file = 'tmp/both_'
+	for relation in all_relations:
+		arg1_sent.append( ' '.join(relation['Arg1']['Lemma']) )
+		arg2_sent.append( ' '.join(relation['Arg2']['Lemma']) )
+
+	with codecs.open(arg1_sent_file_path, 'w', encoding = 'utf-8') as file:
+		file.write( u'\n'.join(arg1_sent) )
+
+	with codecs.open(arg2_sent_file_path, 'w', encoding = 'utf-8') as file:
+		file.write( u'\n'.join(arg2_sent) )
+
+	start = time.time()
+	os.system( 'java -jar lib/BerkeleyParser-1.7.jar -gr lib/eng_sm6.gr -inputFile %s -outputFile tmp/arg1_parsetree.txt' 
+		% arg1_sent_file_path )
+	end = time.time()
+
+	print 'extracting parse tree of all arg1 cost %f' % (end-start)
+
+	start = time.time()
+	os.system( 'java -jar lib/BerkeleyParser-1.7.jar -gr lib/eng_sm6.gr -inputFile %s -outputFile tmp/arg2_parsetree.txt'
+		% arg2_sent_file_path )
+	end = time.time()
+
+	print 'extracting parse tree of all arg2 cost %f' % (end-start)
+
+
+'''
+	write production rules of all trainning set,
+	stored by descending order of counts
+'''
 def get_production_rule_from_file_with_count():
 	arg1_parsetree_file = codecs.open('dict/arg1_parsetree.txt')
 	arg2_parsetree_file = codecs.open('dict/arg2_parsetree.txt')
@@ -306,6 +381,13 @@ def get_production_rule_from_file_with_count():
 	arg2_parsetree_file.close()
 	#parsetree_file.close()
 
+
+'''
+	called by get_production_rule_from_file_with_count()
+
+	read the parse tree of a sentence, 
+	return the production rule, with the help of nltk.Tree
+'''
 def get_production_rule_by_parse_tree(parsetree):
 	syntax_tree = Tree.fromstring(parsetree)
 
@@ -341,120 +423,6 @@ def load_production_rule_dict(file_name, length = -1):
 	return dict_production_rules
 
 
-def write_parse_tree_to_file(file_name):
-	all_relations = read_all_data_utf8(file_name)
-	dict = {}
-	arg1_sent = []
-	arg2_sent = []
-	arg1_sent_file_path = 'tmp/arg1_sentence.txt'
-	arg2_sent_file_path = 'tmp/arg2_sentence.txt'
-	#arg1_prule_file = 'tmp/arg1_production_rule.txt'
-	#arg2_prule_file = 'tmp/arg2_production_rule.txt'
-	#both_prule_file = 'tmp/both_'
-	for relation in all_relations:
-		arg1_sent.append( ' '.join(relation['Arg1']['Lemma']) )
-		arg2_sent.append( ' '.join(relation['Arg2']['Lemma']) )
-
-	with codecs.open(arg1_sent_file_path, 'w', encoding = 'utf-8') as file:
-		file.write( u'\n'.join(arg1_sent) )
-
-	with codecs.open(arg2_sent_file_path, 'w', encoding = 'utf-8') as file:
-		file.write( u'\n'.join(arg2_sent) )
-
-	start = time.time()
-	os.system( 'java -jar lib/BerkeleyParser-1.7.jar -gr lib/eng_sm6.gr -inputFile %s -outputFile tmp/arg1_parsetree.txt' 
-		% arg1_sent_file_path )
-	end = time.time()
-
-	print 'extracting parse tree of all arg1 cost %f' % (end-start)
-
-	start = time.time()
-	os.system( 'java -jar lib/BerkeleyParser-1.7.jar -gr lib/eng_sm6.gr -inputFile %s -outputFile tmp/arg2_parsetree.txt'
-		% arg2_sent_file_path )
-	end = time.time()
-
-	print 'extracting parse tree of all arg2 cost %f' % (end-start)
-
-
-def __deprecated_get_production_rule_from_file_with_count():
-	all_relations = read_data_utf8(config.TRAINSET_PATH)
-	#punctuation = ['.', ',', '!', '"', '#', '&', '\'', '*', '+', '-', '...', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\',\
-	#	']', '^', '_', '`', '|', '~', '``' + '\'\'']
-
-	dict = {}
-	arg1_sent = []
-	arg2_sent = []
-	arg1_sent_file = 'dict/arg1_sentence.txt'
-	arg2_sent_file = 'dict/arg2_sentence.txt'
-	arg1_prule_file = config.ARG1_PRODUCTOIN_RULE_PATH
-	arg2_prule_file = config.ARG2_PRODUCTOIN_RULE_PATH
-	both_prule_file = config.BOTH_PRODUCTOIN_RULE_PATH
-
-	def foo():
-		for index, relation in enumerate(all_relations):
-			arg1_sent.append( ' '.join(relation['Arg1']['Lemma']) ) 
-			arg2_sent.append( ' '.join(relation['Arg2']['Lemma']) )
-
-		with codecs.open(arg1_sent_file, 'w', encoding = 'utf-8') as f1:
-			f1.write(u'\n'.join(arg1_sent))
-		with codecs.open(arg2_sent_file, 'w', encoding = 'utf-8') as f2:
-			f2.write(u'\n'.join(arg2_sent))
-
-		arg1_sentence = codecs.open(arg1_sent_file, 'r', encoding = 'utf-8')
-		arg2_sentence = codecs.open(arg2_sent_file, 'r', encoding = 'utf-8')
-
-	arg1_ptree_file_path = 'dict/arg1_parsetree.txt'
-	arg2_ptree_file_path = 'dict/arg2_parsetree.txt'
-	#os.system( 'java -jar lib/BerkeleyParser-1.7.jar -gr lib/eng_sm6.gr -nThreads 8 -inputFile %s -outputFile %s' \
-	#	% (arg1_sent_file, arg1_ptree_file_path) )
-	os.system( 'java -jar lib/BerkeleyParser-1.7.jar -gr lib/eng_sm6.gr -nThreads 8 -inputFile %s -outputFile %s' \
-		% (arg2_sent_file, arg2_ptree_file_path) )
-	
-
-"""
-	ignore any word pair with symbols
-"""
-def get_word_pair_from_file_with_count(fname):
-	all_relations = read_data(fname)
-	punctuation = ['.', ',', '!', '"', '#', '&', '\'', '*', '+', '-', '...', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\',\
-		']', '^', '_', '`', '|', '~', '$', '%', '--', '``', '\'\'']
-	dict = {}
-	for relation in all_relations:
-		for a1 in relation['Arg1']['Lemma']:
-			for a2 in relation['Arg2']['Lemma']:
-				if a1 in punctuation or a2 in punctuation or a1[0] in '0123456789' or a2[0] in '0123456789':
-					pass
-				else:
-					#pair = '%s|%s' % (stem_string(a1), stem_string(a2))
-					pair = '%s|%s' % (a1, a2)
-					if pair in dict:
-						dict[pair] += 1
-					else:
-						dict[pair] = 1
-
-	return dict
-
-'''
-	deprecated
-'''
-def get_dependency_rule_from_relation(relation, parser):
-	arg1_sent = ' '.join(relation['Arg1']['Lemma']).encode('utf8').replace('\xc2\xa0', '').split('.')
-	arg2_sent = ' '.join(relation['Arg2']['Lemma']).encode('utf8').replace('\xc2\xa0', '').split('.')
-	
-	parse_result = parser.raw_parse_sents(arg1_sent + arg1_sent)
-
-	prule = []
-	for result in parse_result:
-		for t in result:
-			for node in range(len(t.nodes)):
-				if t.nodes[node]['word'] == None or t.nodes[node]['deps'].items() == []:
-					continue
-				else:
-					prule.append( '%s<-%s' % (t.nodes[node]['word'], ' '.join( [ key for key, val in t.nodes[node]['deps'].items() ] )))	
-
-	return prule
-
-
 def write_dependency_rule_sorted():
 	with codecs.open('dict/dependency_rule_by_relation.txt', 'r', encoding = 'utf8', errors = 'ignore') as file:
 		dependency_rules = file.read().split('\n')
@@ -472,6 +440,7 @@ def write_dependency_rule_sorted():
 	with codecs.open(config.DEPENDENCY_RULES, 'w', encoding = 'utf8', errors = 'ignore') as file:
 		#file.write( '\n'.join([ '%s:%d'%(rule, dependency_rule_dict[rule]) for rule in sorted_drule_list]) )
 		file.write( '\n'.join(sorted_drule_list) )
+
 
 '''
 	each line is dependency rules of a relation
@@ -615,19 +584,7 @@ def stem_list(list):
     return [stem_string(item) for item in list]
 
 
-def get_set_word_pairs_from_data():
-	filter = [',', '.', '\"', '\'\'', ':', '']
-	set_word_pairs = set([])
-	for data in trainData:
-		for a1 in data['Arg1']['Word']:
-			for a2 in data['Arg2']['Word']:
-				if a1 in fileter or a2 in filter:
-					pass
-				else:
-					word_pair = '%s|%s' % (a1, a2)
-					set_word_pairs.add(word_pair)
 
-	return set_word_pairs
 
 
 def strip_parse_tree():

@@ -11,7 +11,7 @@ DEPENDENCY_RULES = 'dict/dependency_rule.txt'
 STANFORD_PARSER_JAR_PATH = 'lib/stanford-parser/stanford-parser.jar'
 STANFORD_PARSER_MODEL_PATH = 'lib/stanford-parser/stanford-parser-3.6.0-models.jar'
 
-USE_DEPENDENCY_RULE_NO = 600 # max, 500, accuracy = 0.31726
-USE_PRODUCTION_RULE_NO = 500 # max, 500, accuracy = 0.4076305221
-USE_WORD_PAIR_NO = 1000 		 # max, 500, accuracy = 0.329317269076
+USE_DEPENDENCY_RULE_NO = 400 # max, 500, accuracy = 0.31726
+USE_PRODUCTION_RULE_NO = 400 # max, 500, accuracy = 0.4076305221
+USE_WORD_PAIR_NO = 400 		 # max, 500, accuracy = 0.329317269076
 MODEL = 'model/altogether_wp_pr_dr.model'
