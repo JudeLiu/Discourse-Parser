@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*- 
 import config
 import json, codecs, pickle, os, time
-from PorterStemmer import PorterStemmer
 from nltk.tree import Tree
-from byteify import json_loads_byteified, json_load_byteified, byteify
 
 #KEYS = [u'DocID', u'Arg1', u'Arg2', u'Connective', u'Sense', u'Type', u'ID']
 """
@@ -143,9 +141,6 @@ def read_data(file_name):
 		for line in f:
 			# filter only 'Type' : 'Implicit'
 			obj = json.loads(line)
-			#obj = yaml.safe_load(line)
-			#obj = json_loads_byteified(line)
-			#obj = byteify(json.loads(line))
 
 			if obj['Type'] == 'Implicit':
 				#data.append(convert_unicode_json_object_to_str(obj))
@@ -246,7 +241,6 @@ def get_word_pair_from_file_with_count(fname):
 				if a1 in punctuation or a2 in punctuation or a1[0] in '0123456789' or a2[0] in '0123456789':
 					pass
 				else:
-					#pair = '%s|%s' % (stem_string(a1), stem_string(a2))
 					pair = '%s|%s' % (a1, a2)
 					if pair in dict:
 						dict[pair] += 1
@@ -558,33 +552,6 @@ def write_dependency_rule_by_line(file_name):
 		with codecs.open('tmp/dep_rule_%s_part%d.txt'% (file_name, part), 'w', encoding = 'utf-8') as file:
 			file.write( u'\n'.join(write_data) )
 	pass#for part in range(all_part) end
-
-
-def stem_string(line):
-    if line == "":
-        return ""
-    p = PorterStemmer()
-    word = ""
-    output = ""
-    for c in line:
-        if c.isalpha():
-            word += c.lower()
-        else:
-            if word:
-                #output += p.stem(word)
-                output += p.stem(word)
-                word = ''
-            output += c.lower()
-    if word:
-        output += p.stem(word)
-
-    return str(output)
-
-def stem_list(list):
-    return [stem_string(item) for item in list]
-
-
-
 
 
 def strip_parse_tree():
